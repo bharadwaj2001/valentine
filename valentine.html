@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valentine Surprise</title>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #ffe6ee, #ffd1dc);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Center Card */
+#card {
+  background: white;
+  width: 360px;
+  height: 480px;
+  border-radius: 25px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  text-align: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  animation: pop 0.8s ease;
+}
+
+/* MOBILE BIGGER CARD */
+@media (max-width: 600px) {
+  #card {
+    width: 90vw;     /* almost full width */
+    height: 85vh;   /* almost full height */
+    padding: 25px;
+  }
+}
+
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* Image */
+img {
+  width: 220px;
+  height: auto;
+  margin-top: 10px;
+}
+
+/* Bigger image on mobile */
+@media (max-width: 600px) {
+  img {
+    width: 260px;
+  }
+}
+
+/* Text */
+h2 {
+  margin: 15px 0;
+  color: #ff4d6d;
+  line-height: 1.4;
+  font-size: 20px;
+}
+
+/* Bigger text on mobile */
+@media (max-width: 600px) {
+  h2 {
+    font-size: 24px;
+  }
+}
+
+/* Buttons */
+button {
+  width: 110px;
+  height: 45px;
+  box-sizing: border-box;
+  padding: 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  position: absolute;
+}
+
+/* Bigger buttons on mobile */
+@media (max-width: 600px) {
+  button {
+    width: 140px;
+    height: 55px;
+    font-size: 18px;
+  }
+}
+
+/* YES Button */
+#yesBtn {
+  background: #ff4d6d;
+  color: white;
+  left: 70px;
+  bottom: 40px;
+  z-index: 1;
+}
+
+/* Adjust button position on mobile */
+@media (max-width: 600px) {
+  #yesBtn {
+    left: 20%;
+    bottom: 50px;
+  }
+}
+
+#yesBtn:hover { transform: scale(1.1); }
+
+/* NO Button */
+#noBtn {
+  background: #ddd;
+  color: black;
+  left: 200px;
+  bottom: 40px;
+  z-index: 2;
+}
+
+/* Adjust NO button position on mobile */
+@media (max-width: 600px) {
+  #noBtn {
+    left: 55%;
+    bottom: 50px;
+  }
+}
+
+/* Floating hearts */
+.heart {
+  position: absolute;
+  font-size: 26px;
+  animation: floatUp 2s linear forwards;
+}
+
+@keyframes floatUp {
+  from { bottom: -20px; opacity: 1; }
+  to   { bottom: 100%; opacity: 0; transform: scale(1.5); }
+}
+</style>
+</head>
+
+<body>
+
+<div id="card">
+  <img id="mainImage" alt="Valentine Image">
+  <h2 id="text">Harini, will you be my Valentine? 💕</h2>
+  <button id="yesBtn">YES 💖</button>
+  <button id="noBtn">NO 😜</button>
+</div>
+
+<script>
+const noBtn  = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const card   = document.getElementById("card");
+const text   = document.getElementById("text");
+const image  = document.getElementById("mainImage");
+
+const MIN_DISTANCE = 400;
+const YES_RADIUS   = 100;
+
+/* GIF fallback system */
+const firstImages = [
+  "https://media.giphy.com/media/l4pTdcifPZLpDjL1e/giphy.gif",
+  "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif",
+  "https://media.tenor.com/Q6z0VhZ0ZpMAAAAi/patrick-star-love.gif"
+];
+const secondImages = [
+  "https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif",
+  "https://media.giphy.com/media/1BcfiGuO4NxeE/giphy.gif",
+  "https://media.tenor.com/6oM3V1Z4bL0AAAAi/spongebob-patrick-love.gif"
+];
+
+function loadWithFallback(img, sources, index = 0) {
+  if (index >= sources.length) return;
+  img.src = sources[index];
+  img.onerror = () => loadWithFallback(img, sources, index + 1);
+}
+loadWithFallback(image, firstImages);
+
+/* Distance helper */
+function dist(x1, y1, x2, y2) {
+  return Math.hypot(x2 - x1, y2 - y1);
+}
+
+/* Move NO button */
+function moveNoButton() {
+  const cardRect = card.getBoundingClientRect();
+  const btnRect  = noBtn.getBoundingClientRect();
+  const yesRect = yesBtn.getBoundingClientRect();
+
+  const startX = btnRect.left;
+  const startY = btnRect.top;
+
+  const yesCX = yesRect.left + yesRect.width / 2;
+  const yesCY = yesRect.top  + yesRect.height / 2;
+
+  let newX, newY, tries = 0;
+
+  do {
+    const maxX = card.clientWidth  - noBtn.clientWidth;
+    const maxY = card.clientHeight - noBtn.clientHeight;
+
+    newX = cardRect.left + Math.random() * maxX;
+    newY = cardRect.top  + Math.random() * maxY;
+
+    const dMove = dist(startX, startY, newX, newY);
+    const dYes  = dist(yesCX, yesCY, newX, newY);
+
+    tries++;
+    if (dMove >= MIN_DISTANCE && dYes >= YES_RADIUS) break;
+  } while (tries < 80);
+
+  noBtn.style.left = (newX - cardRect.left) + "px";
+  noBtn.style.top  = (newY - cardRect.top)  + "px";
+}
+
+/* Desktop hover */
+noBtn.addEventListener("mouseenter", moveNoButton);
+/* Mobile touch / click */
+noBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  moveNoButton();
+});
+noBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  moveNoButton();
+});
+
+/* Keep NO away from YES */
+yesBtn.addEventListener("mouseenter", moveNoButton);
+yesBtn.addEventListener("touchstart", moveNoButton);
+
+/* YES click */
+yesBtn.addEventListener("click", () => {
+  text.innerHTML = `
+    💖 YAY!! 💖<br>
+    Best Decision Ever 😘<br><br>
+    I Love You ❤️
+  `;
+  loadWithFallback(image, secondImages);
+  yesBtn.style.display = "none";
+  noBtn.style.display  = "none";
+  startHearts();
+});
+
+/* Hearts */
+function startHearts() {
+  setInterval(() => {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤️";
+    heart.style.left = Math.random() * 100 + "%";
+    card.appendChild(heart);
+    setTimeout(() => heart.remove(), 2000);
+  }, 150);
+}
+</script>
+
+</body>
+</html>
